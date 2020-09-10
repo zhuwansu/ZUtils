@@ -1,21 +1,7 @@
-﻿(function (window, $) {
+(function (window, $) {
     //jquery html builder
     // build easy html element
     var PLUGIN_NAME = "hb";
-
-    function func(options) {
-        if (typeof options === 'string') {
-            var method = $.fn[PLUGIN_NAME].methods[options];
-            if (!method) {
-                method = $.fn[PLUGIN_NAME].methods.default;
-                return method.apply(this, arguments);
-            }
-            return method.apply(this, Array.prototype.slice.call(arguments, 1));
-        } else {
-            $.error('Method ' + options + ' does not exist on jQuery' + PLUGIN_NAME);
-        }
-    }
-    $.fn[PLUGIN_NAME] = func;
 
     function AttrModel(name, value) {
         this.content = [];
@@ -35,6 +21,7 @@
         }
         this.next(name, value)
     }
+
     var _export = {
         default: function (e, content, attr) {
             content = content || '';
@@ -46,24 +33,30 @@
                 href = "javascript:(0);";
             }
             content = content || '';
-            return '<a ' + new AttrModel("href",href) + '>' + content + '</a>';
+            return '<a ' + new AttrModel("href", href) + '>' + content + '</a>';
         },
         attr: function (name, value) {
             return new AttrModel(name, value);
         }
     }
+
+    window[PLUGIN_NAME] = function (options) {
+        return _export[options]
+            ? _export[options].apply(this, Array.prototype.slice.call(arguments, 1))
+            : _export.default.apply(this, arguments);
+    }
+
+    window[PLUGIN_NAME].version = "1.0";
+
     var _$export = {}
     for (var i in _export) {
         _$export['$' + i] = function (v) {
             return $(_export[i](v))
         }
     }
-    $.extend(_export, _$export);
+    if (!$) return;
 
-    $.fn[PLUGIN_NAME].version = "1.0";
-    $.fn[PLUGIN_NAME].methods = _export;
-    window[PLUGIN_NAME] = $.fn[PLUGIN_NAME];
     window['$' + PLUGIN_NAME] = function () {
-        return $($.fn[PLUGIN_NAME].apply(this, arguments))
+        return $(window[PLUGIN_NAME].apply(this, arguments))
     };
 })(window, jQuery);
